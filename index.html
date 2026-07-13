@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>TWICE de EIGO</title>
+<style>
+  :root{
+    --magenta:#FF5FA2; --magenta-soft:#ff8cbf; --apricot:#FCC89B;
+    --bg:#15121b; --bg2:#1d1526; --card:#241d2e; --line:#3a2f47; --input:#1d1826;
+    --text:#f4eef4; --sub:#b9a8bd;
+    --ok:#4cd58a; --ng:#ff7a7a; --radius:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0; background:linear-gradient(170deg,var(--bg),var(--bg2) 55%,#251531);
+    background-attachment:fixed;
+    font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
+    color:var(--text); min-height:100vh;
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--line);
+  }
+  header h1{font-size:1.05rem; margin:0; letter-spacing:.22em; font-weight:600;}
+  header h1 .de{color:var(--magenta);}
+  .hdr-right{display:flex; gap:10px; align-items:center; font-size:.85rem;}
+  .badge{background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:999px; padding:4px 12px; color:var(--sub); letter-spacing:.06em;}
+  button{
+    font-family:inherit; font-size:1rem; border:1px solid var(--line); border-radius:999px;
+    padding:12px 20px; cursor:pointer; color:var(--text); background:#2e2536;
+    transition:transform .06s, background .15s, border-color .15s;
+  }
+  button:active{transform:scale(.97);}
+  .btn-main{background:var(--magenta); border-color:var(--magenta); color:#fff; font-size:1.05rem; letter-spacing:.08em; padding:14px 32px; font-weight:600;}
+  .btn-sub{background:transparent; border:1px solid var(--magenta); color:var(--magenta-soft);}
+  .btn-ghost{background:transparent; border:none; color:var(--sub); text-decoration:underline;}
+  .screen{display:none; padding:20px; max-width:1100px; margin:0 auto;}
+  .screen.active{display:block;}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px;}
+  .card h2{font-size:.78rem; letter-spacing:.3em; color:var(--apricot); font-weight:600; margin:0 0 10px;}
+  .card h3{font-size:.78rem; letter-spacing:.25em; color:var(--magenta-soft); font-weight:600; margin:0 0 6px;}
+
+  #home .hero{display:flex; flex-wrap:wrap; gap:18px; align-items:stretch; margin-top:14px;}
+  #home .mission{flex:1 1 320px; text-align:center;}
+  #home .mission p.big{font-size:1.35rem; margin:10px 0 20px; font-weight:500; line-height:1.6;}
+  #home .stamps{flex:1 1 320px;}
+  .stamp-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:12px;}
+  .stamp-cell{
+    aspect-ratio:1; border:1px dashed var(--line); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:1.25rem;
+    background:rgba(255,255,255,.02); color:var(--apricot);
+  }
+  .stamp-cell.filled{border:1px solid var(--magenta); background:#33203a;}
+  .streak-line{margin-top:14px; font-size:1rem;}
+  .muted{color:var(--sub); font-size:.85rem;}
+  .mv-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:16px;}
+  .mv-item{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; display:flex; flex-direction:column; gap:10px;}
+  .mv-item .mv-title{font-weight:600; line-height:1.4;}
+  .mv-item .mv-status{font-size:.75rem; color:var(--sub); letter-spacing:.06em;}
+  .mv-item .mv-status.ready{color:var(--magenta-soft);}
+  #edit input.file-input{position:absolute; width:1px; height:1px; margin:0; padding:0; overflow:hidden; clip:rect(0,0,0,0);}
+  .file-label{display:inline-block; font-family:inherit; font-size:.85rem; border:1px solid var(--magenta); border-radius:999px; padding:8px 14px; cursor:pointer; color:var(--magenta-soft);}
+
+  #quiz .layout{display:flex; gap:18px; flex-wrap:wrap; margin-top:10px;}
+  .video-pane{flex:1 1 420px; min-width:300px;}
+  .video-box{position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line);}
+  .video-box iframe{position:absolute; inset:0; width:100%; height:100%;}
+  .video-tools{display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; align-items:center;}
+  .video-tools a{color:var(--sub);}
+  .quiz-pane{flex:1 1 380px; min-width:300px;}
+  .progress{font-size:.75rem; letter-spacing:.28em; color:var(--magenta-soft); margin-bottom:8px; font-weight:600;}
+  .song-label{font-size:.9rem; color:var(--sub); margin-bottom:8px; letter-spacing:.05em;}
+  .sentence{font-size:1.5rem; line-height:1.7; margin:12px 0 20px; font-weight:600; letter-spacing:.02em;}
+  .sentence .blank{
+    display:inline-block; min-width:90px; border-bottom:3px solid var(--magenta);
+    text-align:center; color:var(--magenta-soft);
+  }
+  .choices{display:flex; flex-direction:column; gap:12px;}
+  .choices.chips{flex-direction:row; flex-wrap:wrap;}
+  .choices button{font-size:1.1rem; text-align:left; padding:14px 20px; border-radius:14px;}
+  .choices button.correct{border-color:var(--ok); background:#1c2f26; color:var(--ok);}
+  .choices button.wrong{border-color:var(--ng); background:#38222a; color:var(--ng);}
+  button.chip{font-size:1.05rem; padding:10px 18px; border-radius:999px; background:#2e2536; border:1px solid var(--apricot); color:var(--apricot);}
+  .sentence button.chip{background:#33203a; border:1px solid var(--magenta); color:var(--magenta-soft);}
+  .feedback{min-height:2.2em; font-size:1.15rem; font-weight:600; margin-top:14px;}
+  .feedback.ok{color:var(--ok);} .feedback.ng{color:var(--ng);}
+  .next-row{margin-top:10px; display:flex; justify-content:flex-end;}
+
+  #result .card{max-width:520px; margin:30px auto; text-align:center;}
+  #result .big-emoji{font-size:2.8rem; color:var(--apricot);}
+  #result .card h2{font-size:1.3rem; letter-spacing:.06em; color:var(--text); margin:12px 0 6px;}
+
+  #edit h2{font-size:.95rem; letter-spacing:.25em; color:var(--apricot); font-weight:600;}
+  #edit .card{margin-bottom:16px;}
+  #edit input, #edit select, #edit textarea{
+    font-family:inherit; font-size:1rem; padding:10px 12px; border:1px solid var(--line);
+    background:var(--input); color:var(--text); border-radius:10px; width:100%; margin-top:4px;
+  }
+  #edit label{display:block; margin-top:10px; font-size:.85rem; color:var(--sub);}
+  .form-row{display:flex; gap:10px;}
+  .form-row > div{flex:1;}
+  .phrase-item{border-top:1px solid var(--line); padding:12px 0; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center;}
+  .phrase-item .en{font-weight:600;}
+  .small-btn{padding:6px 14px; font-size:.85rem;}
+  .danger{background:transparent; border:1px solid var(--ng); color:var(--ng);}
+  .notice{background:#33291c; border:1px solid #57452a; color:#f0d9ae; border-radius:12px; padding:12px 16px; font-size:.85rem; margin-bottom:14px;}
+  .notice code{color:#fff;}
+  a{color:var(--magenta-soft);}
+  @media (max-width:700px){ .sentence{font-size:1.25rem;} }
+  @media (max-width:520px){
+    header{padding:12px; gap:8px;}
+    header h1{font-size:.88rem; letter-spacing:.14em;}
+    .hdr-right{gap:6px;}
+    .badge{padding:4px 8px;}
+    .screen{padding:14px;}
+    .form-row{flex-direction:column;}
+    .form-row > div{width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>TWICE <span class="de">de</span> EIGO</h1>
+  <div class="hdr-right">
+    <span class="badge">🔥 <span id="hdrStreak">0</span>日</span>
+    <span class="badge">⭐ <span id="hdrStamps">0</span></span>
+    <button class="small-btn" onclick="showScreen('edit')" title="おうちのひと用" aria-label="おうちのひと用設定">⚙️</button>
+  </div>
+</header>
+
+<!-- ============ HOME ============ -->
+<div id="home" class="screen active">
+  <div id="fileWarning" class="notice" style="display:none; margin-top:10px;">
+    ⚠️ <b>このファイルは今「直接開き(file://)」の状態です。</b>YouTubeの仕様(エラー153)で、この開き方では動画が再生できません。<br>
+    おうちのひとへ: PCで <code>python3 -m http.server</code> 等を実行し、<code>http://(PCのIPアドレス):8000/</code> をタブレットのブラウザで開くか、無料ホスティング(GitHub Pages / Netlify Drop)に置いてそのURLで開いてください。
+  </div>
+  <div class="hero">
+    <div class="card mission">
+      <h2>きょうのミッション</h2>
+      <p class="big">TWICEの曲を聴いて<br>英語フレーズクイズ <b id="homeQCount">5</b>もん!</p>
+      <button class="btn-main" onclick="startQuiz()">▶ ぜんぶミックスでスタート!</button>
+      <div style="margin-top:12px;"><button class="btn-sub" onclick="showScreen('library')">▶ MVライブラリ</button></div>
+      <div id="songPicker" style="margin-top:16px;">
+        <div class="muted" style="margin-bottom:6px;">すきな曲だけでチャレンジ ↓</div>
+        <div id="songPickerBtns" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center;"></div>
+      </div>
+      <p class="muted" id="homeDoneMsg" style="margin-top:12px;"></p>
+    </div>
+    <div class="card stamps">
+      <h2>スタンプカード</h2>
+      <div class="stamp-grid" id="stampGrid"></div>
+      <div class="streak-line">🔥 れんぞく <b id="homeStreak">0</b>日 / ⭐ ぜんぶで <b id="homeStamps">0</b>こ</div>
+      <div class="muted" id="cardCount"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MV LIBRARY ============ -->
+<div id="library" class="screen">
+  <div class="card">
+    <h2>TWICE OFFICIAL MV LIBRARY</h2>
+    <p class="muted">公式YouTubeのMVだけを収録。クイズがない曲もMVは見られます。</p>
+  </div>
+  <div class="mv-grid" id="mvGrid"></div>
+  <div style="margin-top:18px;"><button class="btn-main" onclick="showScreen('home'); renderHome();">ホームにもどる</button></div>
+</div>
+
+<!-- ============ QUIZ ============ -->
+<div id="quiz" class="screen">
+  <div class="layout">
+    <div class="video-pane">
+      <div class="video-box"><div id="yt"></div></div>
+      <div class="video-tools">
+        <button class="btn-sub" id="replayBtn" onclick="playCurrentSegment()">🔁 もういちど聴く</button>
+        <a id="ytLink" href="#" target="_blank" class="muted">YouTubeで開く</a>
+      </div>
+      <p class="muted">※うまく再生されないときは「YouTubeで開く」を押してね</p>
+    </div>
+    <div class="quiz-pane card">
+      <div class="progress" id="qProgress"></div>
+      <div class="song-label" id="qSong"></div>
+      <div id="qPrompt" style="font-size:1.05rem;"></div>
+      <div class="sentence" id="qSentence"></div>
+      <div class="choices" id="qChoices"></div>
+      <div class="feedback" id="qFeedback"></div>
+      <div class="next-row"><button id="nextBtn" style="display:none;" class="btn-main" onclick="nextStep()">つぎへ ▶</button></div>
+    </div>
+  </div>
+  <button class="btn-ghost" id="quitBtn" onclick="quitQuiz()">やめてホームにもどる</button>
+</div>
+
+<!-- ============ RESULT ============ -->
+<div id="result" class="screen">
+  <div class="card">
+    <div class="big-emoji" id="resEmoji">🎉</div>
+    <h2 id="resTitle"></h2>
+    <p id="resDetail"></p>
+    <p id="resStreak"></p>
+    <button class="btn-main" onclick="showScreen('home'); renderHome();">ホームにもどる</button>
+    <div style="margin-top:10px;"><button class="btn-sub" onclick="startQuiz()">もういっかい!</button></div>
+  </div>
+</div>
+
+<!-- ============ EDIT (parent) ============ -->
+<div id="edit" class="screen">
+  <h2>⚙️ おうちのひと用 せってい</h2>
+  <div class="notice">
+    📌 初期収録のタイムスタンプ(開始/終了 秒)は<b>目安</b>です。実際に再生して、英語フレーズが流れる区間に微調整してください。<br>
+    📌 歌詞の全文は著作権があるため登録しないでください。クイズに使う<b>短いフレーズだけ</b>にしてください。
+  </div>
+
+  <div class="card">
+    <h3>曲を追加</h3>
+    <div class="form-row">
+      <div><label>曲名<input id="newSongTitle" placeholder="例: ONE SPARK"></label></div>
+      <div><label>YouTubeのURL(公式MV)<input id="newSongUrl" placeholder="https://www.youtube.com/watch?v=..."></label></div>
+    </div>
+    <div style="margin-top:12px;"><button class="btn-sub" onclick="addSong()">＋ 曲を追加</button></div>
+  </div>
+
+  <div class="card">
+    <h3>フレーズを追加</h3>
+    <label>曲<select id="phSong"></select></label>
+    <label>英語フレーズ(短く! 例: I love music)<input id="phText" onblur="updateBlankOptions()"></label>
+    <label>穴埋めにする単語<select id="phBlank"></select></label>
+    <div class="form-row">
+      <div><label>まちがい選択肢 1<input id="phD1" placeholder="例: happy"></label></div>
+      <div><label>まちがい選択肢 2<input id="phD2" placeholder="例: sleepy"></label></div>
+    </div>
+    <label>日本語の意味<input id="phMeaning" placeholder="例: 私は音楽が好き"></label>
+    <div class="form-row">
+      <div><label>再生開始(秒)<input id="phStart" type="number" min="0"></label></div>
+      <div><label>再生終了(秒)<input id="phEnd" type="number" min="1"></label></div>
+    </div>
+    <div style="margin-top:12px; display:flex; gap:10px;">
+      <button class="btn-sub" onclick="addPhrase()">＋ フレーズを追加</button>
+      <button onclick="testPlayForm()">🔊 この区間を試し聴き</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>登録ずみの曲とフレーズ</h3>
+    <div id="songList"></div>
+  </div>
+
+  <div class="card">
+    <h3>家庭用フレーズパック</h3>
+    <p class="muted">別のiPadでも同じクイズを使うためのファイル。読み込んでも、このiPadのスタンプと連続記録は変わりません。</p>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="small-btn" onclick="exportPhrasePack()">📤 パックを書き出す</button>
+      <label class="file-label" for="packFile">📥 パックを読み込む</label>
+      <input class="file-input" id="packFile" type="file" accept="application/json,.json" onchange="importPhrasePack(event)">
+      <button class="small-btn danger" onclick="resetProgress()">スタンプをリセット</button>
+    </div>
+  </div>
+
+  <button class="btn-main" onclick="showScreen('home'); renderHome();">✅ ホームにもどる</button>
+</div>
+
+<script>
+/* ================= data ================= */
+const LS_KEY = 'twiceEigo.v1';
+const PHRASES_PER_QUIZ = 3; // 3フレーズ×2問=1回6問
+
+const DEFAULT_CATALOG = [
+  { id:'likeoohahh', title:'Like OOH-AHH', videoId:'0rtV5esQT6I', phrases:[] },
+  { id:'cheerup', title:'CHEER UP', videoId:'c7rCyll5AeY', phrases:[] },
+  { id:'tt', title:'TT', videoId:'ePpPVE-GGJw', phrases:[] },
+  { id:'knockknock', title:'KNOCK KNOCK', videoId:'8A2t_tAjMz8', phrases:[] },
+  { id:'signal', title:'SIGNAL', videoId:'VQtonf1fv_s', phrases:[] },
+  { id:'likey', title:'LIKEY', videoId:'V2hlQkVJZhE', phrases:[] },
+  { id:'heartshaker', title:'Heart Shaker', videoId:'rRzxEiBLQCA', phrases:[] },
+  { id:'whatislove', title:'What is Love?', videoId:'i0p1bmr0EmE', phrases:[] },
+  { id:'dtna', title:'Dance The Night Away', videoId:'Fm5iP0S1z9w', phrases:[] },
+  { id:'yesoryes', title:'YES or YES', videoId:'mAKsZ26SabQ', phrases:[] },
+  { id:'bestthing', title:'The Best Thing I Ever Did', videoId:'CfUGjK6gGgs', phrases:[] },
+  { id:'fancy', title:'FANCY', videoId:'kOHB85vDuow', phrases:[] },
+  { id:'feelspecial', title:'Feel Special', videoId:'3ymwOvzhwHs', phrases:[] },
+  { id:'moreandmore', title:'MORE & MORE', videoId:'mH0_XpSHkZo', phrases:[] },
+  { id:'icsm', title:"I CAN'T STOP ME", videoId:'CM4CkVFmTds', phrases:[] },
+  { id:'alcoholfree', title:'Alcohol-Free', videoId:'XA2YEHn-A8Q', phrases:[] },
+  { id:'thefeels', title:'The Feels', videoId:'f5_wn8mexmM', phrases:[] },
+  { id:'scientist', title:'SCIENTIST', videoId:'vPwaXytZcgI', phrases:[] },
+  { id:'talkthattalk', title:'Talk that Talk', videoId:'k6jqx9kZgPM', phrases:[] },
+  { id:'moonlightsunrise', title:'MOONLIGHT SUNRISE', videoId:'cKlEE_EYuNM', phrases:[] },
+  { id:'setmefree', title:'SET ME FREE', videoId:'w4cTYnOPdNk', phrases:[] },
+  { id:'igotyou', title:'I GOT YOU', videoId:'haf67eKF0uo', phrases:[] },
+  { id:'onespark', title:'ONE SPARK', videoId:'jCzez_q8si0', phrases:[] },
+  { id:'strategy', title:'Strategy', videoId:'bpiyH00cqS8', phrases:[] },
+  { id:'onemoretime', title:'One More Time', videoId:'HuoOEry-Yc4', phrases:[] },
+];
+
+let state = load();
+function load(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const s = JSON.parse(raw);
+      if(s.songs && s.progress){
+        // 新しい初期収録曲を既存データに追補(ユーザーが削除した曲は復活させたくないので削除記録を見る)
+        s.removedDefaults = s.removedDefaults || [];
+        s.removedPhrases = s.removedPhrases || [];
+        DEFAULT_CATALOG.forEach(d=>{
+          const ex = s.songs.find(x=>x.id===d.id);
+          if(!ex){
+            if(!s.removedDefaults.includes(d.id)) s.songs.push(JSON.parse(JSON.stringify(d)));
+          }else{
+            ex.title=d.title;
+            ex.videoId=d.videoId;
+            ex.phrases=ex.phrases||[];
+            // 既存の初期曲には、新しく増えた初期フレーズだけを追補する
+            d.phrases.forEach(p=>{
+              if(!ex.phrases.some(q=>q.id===p.id) && !s.removedPhrases.includes(p.id))
+                ex.phrases.push(JSON.parse(JSON.stringify(p)));
+            });
+          }
+        });
+        return s;
+      }
+    }
+  }catch(e){}
+  return { songs: JSON.parse(JSON.stringify(DEFAULT_CATALOG)),
+           removedDefaults: [],
+           progress:{ stamps:0, streak:0, lastDate:null } };
+}
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function yesterdayStr(){ const d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ================= YouTube player ================= */
+let player=null, ytReady=false, pendingSeg=null, curVid=null, segTimer=null;
+function clearSegTimer(){ if(segTimer){ clearInterval(segTimer); segTimer=null; } }
+const tag=document.createElement('script'); tag.src='https://www.youtube.com/iframe_api';
+document.head.appendChild(tag);
+window.onYouTubeIframeAPIReady = function(){
+  player = new YT.Player('yt', {
+    videoId: state.songs[0] ? state.songs[0].videoId : 'f5_wn8mexmM',
+    playerVars: Object.assign({ rel:0, playsinline:1, modestbranding:1 },
+      location.protocol.indexOf('http')===0 ? { origin: location.origin } : {}),
+    events:{
+      onReady(){ ytReady=true; if(pendingSeg){ playSegment(...pendingSeg); pendingSeg=null; } },
+      onError(){ const fb=document.getElementById('qFeedback'); if(fb){ fb.textContent='動画をアプリ内で再生できません。「YouTubeで開く」から聴いてね。'; fb.className='feedback ng'; } }
+    }
+  });
+};
+function playSegment(videoId,start,end){
+  if(!ytReady){ pendingSeg=[videoId,start,end]; return; }
+  clearSegTimer();
+  if(curVid===videoId){
+    // 同じ動画なら読み込み直さずシークだけ(再読み込みごとの広告を避ける)
+    player.seekTo(start,true);
+    player.playVideo();
+  }else{
+    curVid=videoId;
+    player.loadVideoById({ videoId, startSeconds:start });
+  }
+  // 終了はendSeconds任せにせず自前で監視して止める(広告後にendSecondsが無視される不具合対策)
+  segTimer=setInterval(()=>{
+    try{ if(player.getCurrentTime()>=end){ player.pauseVideo(); clearSegTimer(); } }catch(e){}
+  },250);
+}
+function playWholeVideo(videoId){
+  if(!ytReady){ pendingSeg=[videoId,0,86400]; return; }
+  clearSegTimer();
+  curVid=videoId;
+  player.loadVideoById({ videoId, startSeconds:0 });
+}
+
+/* ================= screens ================= */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='edit') renderEdit();
+  if(id==='library') renderLibrary();
+  if(player && ytReady && id!=='quiz'){ try{ player.pauseVideo(); }catch(e){} }
+}
+
+function allPhrases(songId){
+  const out=[];
+  state.songs.forEach(s=>{
+    if(songId && s.id!==songId) return;
+    s.phrases.forEach(p=> out.push({song:s, ph:p}));
+  });
+  return out;
+}
+
+function renderHome(){
+  const p=state.progress;
+  document.getElementById('hdrStreak').textContent=p.streak;
+  document.getElementById('hdrStamps').textContent=p.stamps;
+  document.getElementById('homeStreak').textContent=p.streak;
+  document.getElementById('homeStamps').textContent=p.stamps;
+  const grid=document.getElementById('stampGrid'); grid.innerHTML='';
+  const onCard=p.stamps%10, cards=Math.floor(p.stamps/10);
+  const emojis=['★','★','★','★','★','★','★','★','★','♛'];
+  for(let i=0;i<10;i++){
+    const c=document.createElement('div');
+    c.className='stamp-cell'+(i<onCard?' filled':'');
+    c.textContent = i<onCard ? emojis[i] : '';
+    grid.appendChild(c);
+  }
+  document.getElementById('cardCount').textContent = cards>0 ? `カード ${cards}まい コンプリート!` : '10こ集めるとカードコンプリート!';
+  document.getElementById('homeQCount').textContent = PHRASES_PER_QUIZ*2;
+  document.getElementById('homeDoneMsg').textContent = p.lastDate===todayStr() ? '✅ きょうはもうクリアずみ! もっとやってもOK!' : '';
+  const picker=document.getElementById('songPickerBtns'); picker.innerHTML='';
+  state.songs.filter(s=>s.phrases.length>0).forEach(s=>{
+    const b=document.createElement('button'); b.className='btn-sub small-btn';
+    b.textContent='♪ '+s.title;
+    b.onclick=()=>startQuiz(s.id);
+    picker.appendChild(b);
+  });
+  document.getElementById('fileWarning').style.display = location.protocol==='file:' ? 'block' : 'none';
+}
+
+function renderLibrary(){
+  const grid=document.getElementById('mvGrid'); grid.innerHTML='';
+  state.songs.forEach(s=>{
+    const item=document.createElement('div'); item.className='mv-item';
+    const ready=s.phrases&&s.phrases.length>0;
+    item.innerHTML=`<div class="mv-title">${escapeHtml(s.title)}</div>
+      <div class="mv-status${ready?' ready':''}">${ready?'クイズあり':'MVのみ'}</div>`;
+    const b=document.createElement('button'); b.className='btn-sub'; b.textContent='▶ MVを見る';
+    b.onclick=()=>openMV(s.id);
+    item.appendChild(b); grid.appendChild(item);
+  });
+}
+
+function openMV(songId){
+  const song=state.songs.find(s=>s.id===songId); if(!song) return;
+  showScreen('quiz');
+  quitDestination='library';
+  document.getElementById('quitBtn').textContent='MVライブラリにもどる';
+  document.getElementById('qProgress').textContent='MVライブラリ';
+  document.getElementById('qSong').textContent='♪ '+song.title;
+  document.getElementById('qPrompt').textContent=song.phrases.length?'この曲はクイズでも遊べます':'この曲のクイズはまだありません';
+  document.getElementById('qSentence').textContent='';
+  document.getElementById('qChoices').innerHTML='';
+  document.getElementById('qFeedback').textContent='';
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('ytLink').href=`https://www.youtube.com/watch?v=${song.videoId}`;
+  const replay=document.getElementById('replayBtn'); replay.textContent='▶ はじめから再生';
+  replay.onclick=()=>playWholeVideo(song.videoId);
+  playWholeVideo(song.videoId);
+}
+
+/* ================= quiz ================= */
+let quiz=null, quitDestination='home'; // quiz={items:[{song,ph,types:[t1,t2]}], idx, phase:0|1, earned, answered}
+function pickTypes(ph){
+  const n=ph.text.split(' ').length;
+  const listening = (n>=3 && n<=8 && Math.random()<0.5) ? 'order' : 'blank';
+  const comprehension = Math.random()<0.5 ? 'reverse' : 'meaning';
+  return [listening, comprehension];
+}
+function startQuiz(songId){
+  const pool=allPhrases(songId||null);
+  if(pool.length<1){ alert('この曲にはまだフレーズがありません。せってい画面(⚙️)で追加してください。'); return; }
+  if(allPhrases().length<3){ alert('フレーズが少なすぎます。せってい画面で追加してください(全体で3つ以上必要)。'); return; }
+  // 3フレーズに満たない場合は繰り返して6問を保証。同じ曲は連続させて動画切替(=広告機会)を最小化
+  const sh=shuffle(pool);
+  const picked=[];
+  while(picked.length<PHRASES_PER_QUIZ){ picked.push(sh[picked.length % sh.length]); }
+  const bySong={}, order=[];
+  picked.forEach(c=>{ if(!bySong[c.song.id]){ bySong[c.song.id]=[]; order.push(c.song.id); } bySong[c.song.id].push(c); });
+  const items=order.flatMap(id=>bySong[id]).map(c=>({...c, types:pickTypes(c.ph)}));
+  quiz={ items, idx:0, phase:0, earned:0, answered:false };
+  quitDestination='home';
+  document.getElementById('quitBtn').textContent='やめてホームにもどる';
+  showScreen('quiz');
+  renderQuestion();
+}
+function cur(){ return quiz.items[quiz.idx]; }
+function playCurrentSegment(){ const c=cur(); playSegment(c.song.videoId, c.ph.start, c.ph.end); }
+
+function renderQuestion(){
+  const c=cur(), ph=c.ph, type=c.types[quiz.phase];
+  quiz.answered=false;
+  document.getElementById('replayBtn').textContent='🔁 もういちど聴く';
+  document.getElementById('replayBtn').onclick=playCurrentSegment;
+  document.getElementById('qProgress').textContent=`だい ${quiz.idx*2+quiz.phase+1} もん / ${quiz.items.length*2}もん`;
+  document.getElementById('qSong').textContent=`♪ ${c.song.title}`;
+  document.getElementById('ytLink').href=`https://www.youtube.com/watch?v=${c.song.videoId}&t=${ph.start}s`;
+  document.getElementById('qFeedback').textContent=''; document.getElementById('qFeedback').className='feedback';
+  document.getElementById('nextBtn').style.display='none';
+  const chBox=document.getElementById('qChoices'); chBox.innerHTML='';
+  chBox.classList.toggle('chips', type==='order');
+
+  if(type==='blank'){
+    playCurrentSegment();
+    document.getElementById('qPrompt').textContent='🎧 聴こえた英語はどれ? あいてるところに入る単語をえらんでね';
+    const words=ph.text.split(' ');
+    document.getElementById('qSentence').innerHTML =
+      words.map((w,i)=> i===ph.blankIndex ? '<span class="blank">?</span>' : escapeHtml(w)).join(' ');
+    const answer=words[ph.blankIndex];
+    shuffle([answer, ...ph.distractors]).forEach(opt=>{
+      const b=document.createElement('button'); b.textContent=opt;
+      b.dataset.correct=opt===answer?'true':'false';
+      b.onclick=()=>answerChoice(b, opt===answer, ()=>{ // reveal full sentence on answer
+        document.getElementById('qSentence').innerHTML =
+          words.map((w,i)=> i===ph.blankIndex ? `<span class="blank">${escapeHtml(w)}</span>` : escapeHtml(w)).join(' ');
+      });
+      chBox.appendChild(b);
+    });
+  }else if(type==='order'){
+    playCurrentSegment();
+    document.getElementById('qPrompt').textContent='🎧 聴こえた順に ことばをタップしてならべよう(まちがえたら もどせるよ)';
+    renderOrder(ph);
+  }else if(type==='reverse'){
+    document.getElementById('qPrompt').textContent='🇯🇵→🇬🇧 この意味の英語はどれ?';
+    document.getElementById('qSentence').textContent='「'+ph.meaning+'」';
+    const others=shuffle(allPhrases().filter(x=>x.ph.id!==ph.id).map(x=>x.ph.text)).slice(0,2);
+    shuffle([ph.text, ...others]).forEach(opt=>{
+      const b=document.createElement('button'); b.textContent=opt;
+      b.dataset.correct=opt===ph.text?'true':'false';
+      b.onclick=()=>answerChoice(b, opt===ph.text, null);
+      chBox.appendChild(b);
+    });
+  }else{ // meaning
+    document.getElementById('qPrompt').textContent='🤔 このフレーズ、どんな意味?';
+    document.getElementById('qSentence').textContent=ph.text;
+    const others=shuffle(allPhrases().filter(x=>x.ph.id!==ph.id).map(x=>x.ph.meaning)).slice(0,2);
+    shuffle([ph.meaning, ...others]).forEach(opt=>{
+      const b=document.createElement('button'); b.textContent=opt;
+      b.dataset.correct=opt===ph.meaning?'true':'false';
+      b.onclick=()=>answerChoice(b, opt===ph.meaning, null);
+      chBox.appendChild(b);
+    });
+  }
+}
+
+/* 並べ替え問題 */
+function renderOrder(ph){
+  const words=ph.text.split(' ');
+  let pool=shuffle(words.map((w,i)=>({w,k:i})));
+  let ans=[];
+  const sent=document.getElementById('qSentence');
+  const box=document.getElementById('qChoices');
+  function redraw(){
+    sent.innerHTML = ans.length
+      ? ans.map((t,i)=>`<button class="chip" data-i="${i}">${escapeHtml(t.w)}</button>`).join(' ')
+      : '<span class="muted" style="font-size:1rem; font-weight:normal;">👇 ここにことばがならぶよ</span>';
+    sent.querySelectorAll('button.chip').forEach(b=>{
+      b.onclick=()=>{ if(quiz.answered) return; pool.push(ans.splice(+b.dataset.i,1)[0]); redraw(); };
+    });
+    box.innerHTML='';
+    pool.forEach((t,i)=>{
+      const b=document.createElement('button'); b.className='chip'; b.textContent=t.w;
+      b.onclick=()=>{ if(quiz.answered) return; ans.push(pool.splice(i,1)[0]); redraw(); };
+      box.appendChild(b);
+    });
+    if(pool.length===0 && !quiz.answered){
+      const ok=document.createElement('button'); ok.className='btn-main'; ok.textContent='これでけってい!';
+      ok.style.width='100%';
+      ok.onclick=()=>{
+        quiz.answered=true;
+        const isCorrect = ans.map(t=>t.w).join(' ')===ph.text;
+        const fb=document.getElementById('qFeedback');
+        if(isCorrect){
+          quiz.earned++;
+          fb.textContent='⭐ '+CHEERS[Math.floor(Math.random()*CHEERS.length)];
+          fb.className='feedback ok';
+        }else{
+          const words=ph.text.split(' ');
+          fb.innerHTML='おしい!<br>'
+            +'<span style="font-size:.95rem; font-weight:normal;">あなたの答え: </span>'
+            +ans.map((t,i)=>`<span style="font-size:1.05rem; color:${t.w===words[i]?'var(--ok)':'var(--ng)'};">${escapeHtml(t.w)}</span>`).join(' ')
+            +'<br><span style="font-size:.95rem; font-weight:normal;">せいかい: </span><span style="font-size:1.05rem; color:var(--text);">'+escapeHtml(ph.text)+'</span>';
+          fb.className='feedback ng';
+        }
+        sent.textContent=ph.text;
+        box.innerHTML='';
+        document.getElementById('nextBtn').style.display='inline-block';
+      };
+      box.appendChild(ok);
+    }
+  }
+  redraw();
+}
+
+const CHEERS=['やったー!すごい!','せいかい!その調子!','パーフェクト!','いいね、聴き取れてる!','ナイス!🎶'];
+function answerChoice(btn, isCorrect, revealFn){
+  if(quiz.answered) return;
+  quiz.answered=true;
+  const fb=document.getElementById('qFeedback');
+  document.querySelectorAll('#qChoices button').forEach(b=>{ b.disabled=true; });
+  if(revealFn) revealFn();
+  if(isCorrect){
+    btn.classList.add('correct'); btn.disabled=false;
+    quiz.earned++;
+    fb.textContent='⭐ '+CHEERS[Math.floor(Math.random()*CHEERS.length)];
+    fb.className='feedback ok';
+  }else{
+    btn.classList.add('wrong');
+    const correct=document.querySelector('#qChoices button[data-correct="true"]');
+    if(correct) correct.classList.add('correct');
+    fb.textContent='おしい! 正解をみどりで表示したよ。もういちど聴いてみよう';
+    fb.className='feedback ng';
+  }
+  document.getElementById('nextBtn').style.display='inline-block';
+}
+function nextStep(){
+  if(quiz.phase===0){ quiz.phase=1; renderQuestion(); return; }
+  quiz.phase=0; quiz.idx++;
+  if(quiz.idx>=quiz.items.length){ finishQuiz(); } else { renderQuestion(); }
+}
+function quitQuiz(){
+  clearSegTimer();
+  if(player&&ytReady){try{player.pauseVideo();}catch(e){}}
+  const destination=quitDestination;
+  quitDestination='home';
+  showScreen(destination);
+  if(destination==='home') renderHome();
+}
+
+function finishQuiz(){
+  const p=state.progress, today=todayStr();
+  p.stamps += quiz.earned;
+  if(p.lastDate!==today){
+    p.streak = (p.lastDate===yesterdayStr()) ? p.streak+1 : 1;
+    p.lastDate = today;
+  }
+  save();
+  const total=quiz.items.length*2;
+  document.getElementById('resEmoji').textContent = quiz.earned===total?'♛':(quiz.earned>=total*0.6?'★':'♪');
+  document.getElementById('resTitle').textContent = quiz.earned===total?'パーフェクト!!':(quiz.earned>=total*0.6?'よくできました!':'チャレンジえらい!');
+  document.getElementById('resDetail').textContent = `⭐ スタンプ ${quiz.earned}こ ゲット! (${quiz.earned}/${total}せいかい)`;
+  document.getElementById('resStreak').textContent = `🔥 れんぞく${p.streak}日目!`;
+  clearSegTimer();
+  if(player&&ytReady){try{player.pauseVideo();}catch(e){}}
+  showScreen('result');
+}
+
+/* ================= edit (parent) ================= */
+function renderEdit(){
+  const sel=document.getElementById('phSong'); sel.innerHTML='';
+  state.songs.forEach(s=>{ const o=document.createElement('option'); o.value=s.id; o.textContent=s.title; sel.appendChild(o); });
+  const list=document.getElementById('songList'); list.innerHTML='';
+  const managed=state.songs.filter(s=>s.phrases.length>0||!DEFAULT_CATALOG.some(d=>d.id===s.id));
+  if(!managed.length) list.innerHTML='<p class="muted">フレーズパックを読み込むか、上のフォームからフレーズを追加してください。</p>';
+  managed.forEach(s=>{
+    const h=document.createElement('div');
+    h.innerHTML=`<h4 style="margin:14px 0 4px;">♪ ${escapeHtml(s.title)} <button class="small-btn danger" onclick="deleteSong('${s.id}')">曲を削除</button></h4>`;
+    s.phrases.forEach(p=>{
+      const row=document.createElement('div'); row.className='phrase-item';
+      row.innerHTML=`<div><span class="en">${escapeHtml(p.text)}</span><br>
+        <span class="muted">${escapeHtml(p.meaning)} / ${p.start}〜${p.end}秒 / 穴埋め: ${escapeHtml(p.text.split(' ')[p.blankIndex]||'?')}</span></div>
+        <div style="display:flex;gap:6px;">
+          <button class="small-btn" onclick="testPlay('${s.id}','${p.id}')">🔊 試し聴き</button>
+          <button class="small-btn" onclick="editTimes('${s.id}','${p.id}')">⏱ 区間を修正</button>
+          <button class="small-btn danger" onclick="deletePhrase('${s.id}','${p.id}')">削除</button>
+        </div>`;
+      h.appendChild(row);
+    });
+    list.appendChild(h);
+  });
+}
+function parseYouTubeId(url){
+  const m=url.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([A-Za-z0-9_-]{11})/);
+  if(m) return m[1];
+  if(/^[A-Za-z0-9_-]{11}$/.test(url.trim())) return url.trim();
+  return null;
+}
+function addSong(){
+  const title=document.getElementById('newSongTitle').value.trim();
+  const vid=parseYouTubeId(document.getElementById('newSongUrl').value.trim()||'');
+  if(!title||!vid){ alert('曲名と正しいYouTubeのURLを入れてください'); return; }
+  state.songs.push({ id:'s'+Date.now(), title, videoId:vid, phrases:[] });
+  save(); renderEdit();
+  document.getElementById('newSongTitle').value=''; document.getElementById('newSongUrl').value='';
+}
+function updateBlankOptions(){
+  const words=(document.getElementById('phText').value.trim()).split(/\s+/).filter(Boolean);
+  const sel=document.getElementById('phBlank'); sel.innerHTML='';
+  words.forEach((w,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=w; sel.appendChild(o); });
+}
+function addPhrase(){
+  const songId=document.getElementById('phSong').value;
+  const song=state.songs.find(s=>s.id===songId);
+  const text=document.getElementById('phText').value.trim().replace(/\s+/g,' ');
+  const blankIndex=parseInt(document.getElementById('phBlank').value,10);
+  const d1=document.getElementById('phD1').value.trim(), d2=document.getElementById('phD2').value.trim();
+  const meaning=document.getElementById('phMeaning').value.trim();
+  const start=parseInt(document.getElementById('phStart').value,10), end=parseInt(document.getElementById('phEnd').value,10);
+  if(!song||!text||isNaN(blankIndex)||!d1||!d2||!meaning||isNaN(start)||isNaN(end)||end<=start){
+    alert('すべての項目を入れてください(終了秒は開始秒より大きく)'); return;
+  }
+  if(text.split(' ').length>12){ alert('フレーズが長すぎます。短い一節(目安10語以内)にしてください。'); return; }
+  song.phrases.push({ id:'p'+Date.now(), text, blankIndex, distractors:[d1,d2], meaning, start, end });
+  save(); renderEdit();
+  ['phText','phD1','phD2','phMeaning','phStart','phEnd'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('phBlank').innerHTML='';
+  alert('フレーズを追加しました!');
+}
+function deleteSong(id){ if(!confirm('この曲とフレーズを削除しますか?')) return; state.songs=state.songs.filter(s=>s.id!==id); state.removedDefaults=state.removedDefaults||[]; if(!state.removedDefaults.includes(id)) state.removedDefaults.push(id); save(); renderEdit(); }
+function deletePhrase(sid,pid){ const s=state.songs.find(s=>s.id===sid); if(!s) return; if(!confirm('このフレーズを削除しますか?')) return; s.phrases=s.phrases.filter(p=>p.id!==pid); state.removedPhrases=state.removedPhrases||[]; if(!state.removedPhrases.includes(pid)) state.removedPhrases.push(pid); save(); renderEdit(); }
+function editTimes(sid,pid){
+  const s=state.songs.find(s=>s.id===sid); const p=s&&s.phrases.find(p=>p.id===pid); if(!p) return;
+  const ns=prompt('再生開始(秒)', p.start); if(ns===null) return;
+  const ne=prompt('再生終了(秒)', p.end); if(ne===null) return;
+  const a=parseInt(ns,10), b=parseInt(ne,10);
+  if(isNaN(a)||isNaN(b)||b<=a){ alert('数字が正しくありません'); return; }
+  p.start=a; p.end=b; save(); renderEdit();
+}
+function testPlay(sid,pid){
+  const s=state.songs.find(s=>s.id===sid); const p=s&&s.phrases.find(p=>p.id===pid); if(!p) return;
+  showScreen('quiz');
+  quitDestination='edit';
+  document.getElementById('quitBtn').textContent='せっていにもどる';
+  document.getElementById('qProgress').textContent='試し聴きモード';
+  document.getElementById('qSong').textContent='♪ '+s.title;
+  document.getElementById('qPrompt').textContent='区間の確認中。終わったら「せっていにもどる」を押してください';
+  document.getElementById('qSentence').textContent=p.text;
+  document.getElementById('qChoices').innerHTML='';
+  document.getElementById('qFeedback').textContent='';
+  document.getElementById('replayBtn').textContent='🔁 もういちど聴く';
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('ytLink').href=`https://www.youtube.com/watch?v=${s.videoId}&t=${p.start}s`;
+  document.getElementById('replayBtn').onclick=()=>playSegment(s.videoId,p.start,p.end);
+  playSegment(s.videoId,p.start,p.end);
+}
+function testPlayForm(){
+  const songId=document.getElementById('phSong').value;
+  const song=state.songs.find(s=>s.id===songId);
+  const start=parseInt(document.getElementById('phStart').value,10), end=parseInt(document.getElementById('phEnd').value,10);
+  if(!song||isNaN(start)||isNaN(end)||end<=start){ alert('曲と開始/終了秒を入れてください'); return; }
+  showScreen('quiz');
+  quitDestination='edit';
+  document.getElementById('quitBtn').textContent='せっていにもどる';
+  document.getElementById('qProgress').textContent='試し聴きモード';
+  document.getElementById('qSong').textContent='♪ '+song.title;
+  document.getElementById('qPrompt').textContent='区間の確認中。終わったら「せっていにもどる」を押してください';
+  document.getElementById('qChoices').innerHTML='';
+  document.getElementById('replayBtn').textContent='🔁 もういちど聴く';
+  document.getElementById('qSentence').textContent='';
+  document.getElementById('nextBtn').style.display='none';
+  document.getElementById('replayBtn').onclick=()=>playSegment(song.videoId,start,end);
+  playSegment(song.videoId,start,end);
+}
+function phrasePack(){
+  return { type:'twice-eigo-family-pack', version:1,
+    songs:state.songs.filter(s=>s.phrases&&s.phrases.length).map(s=>({
+      id:s.id, title:s.title, videoId:s.videoId, phrases:s.phrases
+    })) };
+}
+function exportPhrasePack(){
+  const blob=new Blob([JSON.stringify(phrasePack(),null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download='twice-family-pack.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function mergePhrasePack(pack){
+  if(!pack||pack.type!=='twice-eigo-family-pack'||!Array.isArray(pack.songs)) throw new Error('invalid pack');
+  pack.songs.forEach(incoming=>{
+    if(!incoming||!incoming.id||!incoming.videoId||!Array.isArray(incoming.phrases)) return;
+    let song=state.songs.find(s=>s.id===incoming.id)||state.songs.find(s=>s.videoId===incoming.videoId);
+    if(!song){ song={id:incoming.id,title:incoming.title||incoming.id,videoId:incoming.videoId,phrases:[]}; state.songs.push(song); }
+    song.title=incoming.title||song.title; song.videoId=incoming.videoId; song.phrases=song.phrases||[];
+    incoming.phrases.forEach(p=>{
+      if(!p||!p.id||!p.text||!p.meaning) return;
+      const i=song.phrases.findIndex(x=>x.id===p.id);
+      if(i>=0) song.phrases[i]=p; else song.phrases.push(p);
+      state.removedPhrases=(state.removedPhrases||[]).filter(id=>id!==p.id);
+    });
+  });
+}
+async function importPhrasePack(event){
+  try{
+    const file=event.target.files&&event.target.files[0]; if(!file) return;
+    const pack=JSON.parse(await file.text()); mergePhrasePack(pack); save();
+    renderEdit(); renderHome(); renderLibrary();
+    alert('家庭用フレーズパックを読み込みました。スタンプはそのままです。');
+  }catch(e){ alert('フレーズパックの形式が正しくありません'); }
+  event.target.value='';
+}
+function resetProgress(){ if(!confirm('スタンプと連続記録を0に戻します。よろしいですか?')) return; state.progress={stamps:0,streak:0,lastDate:null}; save(); renderHome(); }
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* replay button default */
+document.getElementById('replayBtn').onclick=()=>{ if(quiz) playCurrentSegment(); };
+renderHome();
+</script>
+</body>
+</html>
