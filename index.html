@@ -119,6 +119,77 @@
     .form-row{flex-direction:column;}
     .form-row > div{width:100%;}
   }
+
+  /* v1.6 — TWICE Japan inspired airy editorial theme */
+  :root{
+    --magenta:#f45f98; --magenta-soft:#f45f98; --apricot:#ffa08b;
+    --primary:linear-gradient(110deg,#f45f98,#ffa08b);
+    --bg:#fbfaf7; --bg2:#fbfaf7; --card:transparent; --line:#dedad5; --input:#fff;
+    --text:#171419; --sub:#776f77; --ok:#168453; --ng:#c94a57; --radius:0;
+  }
+  body{background:var(--bg); background-attachment:scroll; font-family:Avenir,'Helvetica Neue','Yu Gothic','Hiragino Kaku Gothic ProN',sans-serif;}
+  header{height:76px; padding:0 38px; background:#fbfaf7; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20;}
+  header h1{font-size:.92rem; letter-spacing:.22em; font-weight:800;}
+  header h1 .de{display:inline-block; background:var(--primary); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .hdr-right{gap:9px;}
+  .badge{background:#fff; border-color:var(--line); color:var(--text); padding:7px 12px;}
+  header .small-btn{width:38px; height:38px; padding:0; border:0; background:var(--primary); color:#fff;}
+  button{background:#fff; border-color:var(--line); color:var(--text); min-height:44px;}
+  .btn-main{background:var(--primary); border:0; color:#fff; box-shadow:none;}
+  .btn-sub{background:transparent; border-color:var(--text); color:var(--text);}
+  .btn-ghost{color:var(--sub);}
+  .screen{max-width:1100px; padding:42px 38px 80px;}
+  .card{background:transparent; border:0; border-radius:0; padding:26px 0;}
+  .card h2,.card h3,#edit h2{color:var(--magenta);}
+  #home .hero{gap:54px; margin-top:4px;}
+  #home .mission{text-align:left;}
+  #home .mission,#home .stamps{border-top:2px solid var(--text);}
+  #home .mission p.big{font-size:clamp(1.65rem,3vw,2.35rem); line-height:1.45; letter-spacing:-.03em; margin:16px 0 28px;}
+  #home .mission #songPickerBtns{justify-content:flex-start !important;}
+  .stamp-cell{border-color:#cfcac4; background:#fff; color:var(--apricot);}
+  .stamp-cell.filled{border-color:transparent; background:var(--primary); color:#fff;}
+
+  #library .library-hero{padding:10px 0 46px;}
+  .eyebrow{display:inline-block; margin:0 0 16px; font-size:.75rem; font-weight:800; letter-spacing:.24em; background:var(--primary); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  #library .library-title{font-size:clamp(2.5rem,6vw,4.25rem); line-height:.98; letter-spacing:-.05em; margin:0;}
+  #library .library-lead{max-width:540px; margin:24px 0 0; color:var(--sub); line-height:1.8;}
+  .library-rule{display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-top:22px; background:var(--primary) 0 0/100% 2px no-repeat;}
+  .library-count{font-size:.75rem; font-weight:800; letter-spacing:.14em;}
+  .mv-grid{grid-template-columns:repeat(3,minmax(0,1fr)); gap:36px 18px; margin-top:0;}
+  .mv-item{background:transparent; border:0; border-radius:0; padding:0; gap:0; min-width:0;}
+  .mv-thumb{display:block; position:relative; width:100%; min-height:0; padding:0; border:0; border-radius:0; aspect-ratio:16/9; overflow:hidden; background:#f1efeb;}
+  .mv-thumb img{width:100%; height:100%; object-fit:cover; display:block;}
+  .mv-thumb .play-label{position:absolute; right:12px; bottom:12px; padding:9px 13px; border-radius:999px; background:rgba(255,255,255,.94); color:var(--text); font-size:.65rem; font-weight:900; letter-spacing:.1em;}
+  .mv-thumb.no-thumb::before{content:'TWICE MV'; position:absolute; inset:0; display:grid; place-items:center; color:var(--sub); font-size:.75rem; font-weight:800; letter-spacing:.18em;}
+  .mv-meta{display:grid; grid-template-columns:1fr auto; gap:12px; padding-top:13px; align-items:start;}
+  .mv-item .mv-title{font-size:1rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .mv-item .mv-status{margin-top:5px; font-size:.68rem;}
+  .mv-item .mv-status.ready{color:var(--magenta); font-weight:800;}
+  .mv-arrow{font-size:1.35rem; line-height:1; background:var(--primary); -webkit-background-clip:text; background-clip:text; color:transparent;}
+
+  .video-box{border:0; border-radius:0;}
+  .quiz-pane.card{border-top:2px solid var(--text);}
+  .choices button,button.chip{background:#fff; border-color:var(--line); color:var(--text);}
+  .choices button.correct{border-color:var(--ok); background:#edf8f2; color:var(--ok);}
+  .choices button.wrong{border-color:var(--ng); background:#fff1f2; color:var(--ng);}
+  .sentence button.chip{background:#fff; border-color:var(--magenta); color:var(--magenta);}
+  #result .card{border-top:2px solid var(--text);}
+  #edit > h2{margin-top:0;}
+  #edit .card{border-top:1px solid var(--line); margin-bottom:20px;}
+  #edit input,#edit select,#edit textarea{background:#fff; color:var(--text); border-color:var(--line);}
+  .phrase-item{border-color:var(--line);}
+  .notice{background:#fff6ec; border-color:#ebcda9; color:#715333;}
+  .notice code{color:var(--text);}
+  a{color:var(--magenta);}
+  @media(max-width:900px){.mv-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media(max-width:520px){
+    header{height:64px; padding:0 18px;}
+    .screen{padding:34px 18px 60px;}
+    .badge:first-child{display:none;}
+    #home .hero{gap:22px;}
+    .mv-grid{grid-template-columns:1fr; gap:34px;}
+    .library-rule{align-items:flex-end;}
+  }
 </style>
 </head>
 <body>
@@ -161,12 +232,14 @@
 
 <!-- ============ MV LIBRARY ============ -->
 <div id="library" class="screen">
-  <div class="card">
-    <h2>TWICE OFFICIAL MV LIBRARY</h2>
-    <p class="muted">公式YouTubeのMVだけを収録。クイズがない曲もMVは見られます。</p>
+  <div class="library-hero">
+    <p class="eyebrow">OFFICIAL MV LIBRARY</p>
+    <h2 class="library-title">Watch, listen,<br>and learn.</h2>
+    <p class="library-lead">TWICEの公式MVで、好きな曲から英語にふれる。クイズがない曲も、そのままMVを楽しめます。</p>
   </div>
+  <div class="library-rule"><span class="library-count" id="mvCount"></span><span class="muted">JYP公式YouTube</span></div>
   <div class="mv-grid" id="mvGrid"></div>
-  <div style="margin-top:18px;"><button class="btn-main" onclick="showScreen('home'); renderHome();">ホームにもどる</button></div>
+  <div style="margin-top:54px;"><button class="btn-sub" onclick="showScreen('home'); renderHome();">← ホームにもどる</button></div>
 </div>
 
 <!-- ============ QUIZ ============ -->
@@ -420,14 +493,18 @@ function renderHome(){
 
 function renderLibrary(){
   const grid=document.getElementById('mvGrid'); grid.innerHTML='';
+  document.getElementById('mvCount').textContent=`${state.songs.length} MUSIC VIDEOS`;
   state.songs.forEach(s=>{
     const item=document.createElement('div'); item.className='mv-item';
     const ready=s.phrases&&s.phrases.length>0;
-    item.innerHTML=`<div class="mv-title">${escapeHtml(s.title)}</div>
-      <div class="mv-status${ready?' ready':''}">${ready?'クイズあり':'MVのみ'}</div>`;
-    const b=document.createElement('button'); b.className='btn-sub'; b.textContent='▶ MVを見る';
+    const b=document.createElement('button'); b.className='mv-thumb';
+    b.setAttribute('aria-label',`${s.title}のMVを見る`);
+    b.innerHTML=`<img loading="lazy" src="https://i.ytimg.com/vi/${encodeURIComponent(s.videoId)}/hqdefault.jpg" alt="" onerror="this.parentElement.classList.add('no-thumb');this.remove()"><span class="play-label">PLAY</span>`;
     b.onclick=()=>openMV(s.id);
-    item.appendChild(b); grid.appendChild(item);
+    item.appendChild(b);
+    const meta=document.createElement('div'); meta.className='mv-meta';
+    meta.innerHTML=`<div><div class="mv-title">${escapeHtml(s.title)}</div><div class="mv-status${ready?' ready':''}">${ready?'QUIZ READY':'MVのみ'}</div></div><span class="mv-arrow">↗</span>`;
+    item.appendChild(meta); grid.appendChild(item);
   });
 }
 
