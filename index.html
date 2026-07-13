@@ -155,6 +155,7 @@
   #library .library-lead{max-width:540px; margin:24px 0 0; color:var(--sub); line-height:1.8;}
   .library-rule{display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-top:22px; background:var(--primary) 0 0/100% 2px no-repeat;}
   .library-count{font-size:.75rem; font-weight:800; letter-spacing:.14em;}
+  .library-back{position:sticky; top:12px; z-index:20; width:max-content; margin:0 0 24px; background:rgba(251,250,247,.94); backdrop-filter:blur(10px); box-shadow:0 8px 24px rgba(20,20,20,.08);}
   .mv-grid{grid-template-columns:repeat(3,minmax(0,1fr)); gap:36px 18px; margin-top:0;}
   .mv-item{background:transparent; border:0; border-radius:0; padding:0; gap:0; min-width:0;}
   .mv-thumb{display:block; position:relative; width:100%; min-height:0; padding:0; border:0; border-radius:0; aspect-ratio:16/9; overflow:hidden; background:#f1efeb;}
@@ -250,6 +251,7 @@
 
 <!-- ============ MV LIBRARY ============ -->
 <div id="library" class="screen">
+  <button class="btn-sub library-back" onclick="showScreen('home'); renderHome();">← ホーム</button>
   <div class="library-hero">
     <p class="eyebrow">OFFICIAL MV LIBRARY</p>
     <h2 class="library-title">Watch, listen,<br>and learn.</h2>
@@ -363,6 +365,8 @@ const REMOTE_PACK_VERSION_KEY = 'twiceEigo.familyPackVersion';
 let pendingRemotePack=null;
 let pendingRemoteNotify=false;
 const PHRASES_PER_QUIZ = 3; // 3フレーズ×2問=1回6問
+const SEGMENT_LEAD_IN = 2;
+const SEGMENT_TAIL = 8;
 
 const DEFAULT_CATALOG = [
   { id:'likeoohahh', title:'Like OOH-AHH', videoId:'0rtV5esQT6I', phrases:[] },
@@ -492,18 +496,20 @@ window.onYouTubeIframeAPIReady = function(){
 };
 function playSegment(videoId,start,end){
   if(!ytReady){ pendingSeg=[videoId,start,end]; return; }
+  const clipStart=Math.max(0,(Number(start)||0)-SEGMENT_LEAD_IN);
+  const clipEnd=Math.max(clipStart+1,(Number(end)||0)+SEGMENT_TAIL);
   clearSegTimer();
   if(curVid===videoId){
     // 同じ動画なら読み込み直さずシークだけ(再読み込みごとの広告を避ける)
-    player.seekTo(start,true);
+    player.seekTo(clipStart,true);
     player.playVideo();
   }else{
     curVid=videoId;
-    player.loadVideoById({ videoId, startSeconds:start });
+    player.loadVideoById({ videoId, startSeconds:clipStart });
   }
   // 終了はendSeconds任せにせず自前で監視して止める(広告後にendSecondsが無視される不具合対策)
   segTimer=setInterval(()=>{
-    try{ if(player.getCurrentTime()>=end){ player.pauseVideo(); clearSegTimer(); } }catch(e){}
+    try{ if(player.getCurrentTime()>=clipEnd){ player.pauseVideo(); clearSegTimer(); } }catch(e){}
   },250);
 }
 function playWholeVideo(videoId){
@@ -552,7 +558,7 @@ function renderHome(){
   const picker=document.getElementById('songPickerBtns'); picker.innerHTML='';
   state.songs.filter(s=>s.phrases.length>0).forEach(s=>{
     const b=document.createElement('button'); b.className='btn-sub small-btn';
-    b.textContent='♪ '+s.title;
+    b.textContent=`♪ ${s.title} (${Math.min(s.phrases.length,PHRASES_PER_QUIZ)*2}問)`;
     b.onclick=()=>startQuiz(s.id);
     picker.appendChild(b);
   });
@@ -607,10 +613,9 @@ function startQuiz(songId){
   const pool=allPhrases(songId||null);
   if(pool.length<1){ alert('この曲にはまだフレーズがありません。せってい画面(⚙️)で追加してください。'); return; }
   if(allPhrases().length<3){ alert('フレーズが少なすぎます。せってい画面で追加してください(全体で3つ以上必要)。'); return; }
-  // 3フレーズに満たない場合は繰り返して6問を保証。同じ曲は連続させて動画切替(=広告機会)を最小化
+  // 同じフレーズは1セッションで1回だけ。曲別は登録数に応じ2/4/6問にする。
   const sh=shuffle(pool);
-  const picked=[];
-  while(picked.length<PHRASES_PER_QUIZ){ picked.push(sh[picked.length % sh.length]); }
+  const picked=sh.slice(0,PHRASES_PER_QUIZ);
   const bySong={}, order=[];
   picked.forEach(c=>{ if(!bySong[c.song.id]){ bySong[c.song.id]=[]; order.push(c.song.id); } bySong[c.song.id].push(c); });
   const items=order.flatMap(id=>bySong[id]).map(c=>({...c, types:pickTypes(c.ph)}));
@@ -630,7 +635,7 @@ function renderQuestion(){
   document.getElementById('replayBtn').onclick=playCurrentSegment;
   document.getElementById('qProgress').textContent=`だい ${quiz.idx*2+quiz.phase+1} もん / ${quiz.items.length*2}もん`;
   document.getElementById('qSong').textContent=`♪ ${c.song.title}`;
-  document.getElementById('ytLink').href=`https://www.youtube.com/watch?v=${c.song.videoId}&t=${ph.start}s`;
+  document.getElementById('ytLink').href=`https://www.youtube.com/watch?v=${c.song.videoId}&t=${Math.max(0,ph.start-SEGMENT_LEAD_IN)}s`;
   document.getElementById('qFeedback').textContent=''; document.getElementById('qFeedback').className='feedback';
   document.getElementById('nextBtn').style.display='none';
   const chBox=document.getElementById('qChoices'); chBox.innerHTML='';
