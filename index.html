@@ -182,6 +182,13 @@
   .notice code{color:var(--text);}
   a{color:var(--magenta);}
   @media(max-width:900px){.mv-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  .pack-modal{position:fixed; inset:0; z-index:100; display:none; place-items:center; padding:24px; background:rgba(23,20,25,.58);}
+  .pack-modal.active{display:grid;}
+  .pack-dialog{width:min(420px,100%); padding:30px; background:#fbfaf7; border-top:3px solid transparent; border-image:var(--primary) 1;}
+  .pack-dialog h2{margin:0 0 10px; font-size:1.35rem;}
+  .pack-dialog p{color:var(--sub); line-height:1.7;}
+  .pack-dialog input{width:100%; min-height:48px; margin:8px 0 12px; padding:10px 14px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--text); font:inherit; font-size:1rem;}
+  .pack-error{min-height:1.4em; color:var(--ng) !important; font-size:.85rem;}
   @media(max-width:520px){
     header{height:64px; padding:0 18px;}
     .screen{padding:34px 18px 60px;}
@@ -202,6 +209,17 @@
     <button class="small-btn" onclick="showScreen('edit')" title="おうちのひと用" aria-label="おうちのひと用設定">⚙️</button>
   </div>
 </header>
+
+<div class="pack-modal" id="packPasswordModal" role="dialog" aria-modal="true" aria-labelledby="packPasswordTitle">
+  <div class="pack-dialog">
+    <p class="eyebrow">FAMILY PHRASE PACK</p>
+    <h2 id="packPasswordTitle">家庭用パスワード</h2>
+    <p>クイズをこのiPadへ読み込みます。入力は初回だけです。</p>
+    <input id="packPasswordInput" type="password" autocomplete="current-password" aria-label="家庭用パスワード">
+    <p class="pack-error" id="packPasswordError"></p>
+    <button class="btn-main" onclick="submitRemotePackPassword()">クイズを読み込む</button>
+  </div>
+</div>
 
 <!-- ============ HOME ============ -->
 <div id="home" class="screen active">
@@ -322,13 +340,15 @@
 
   <div class="card">
     <h3>家庭用フレーズパック</h3>
-    <p class="muted">別のiPadでも同じクイズを使うためのファイル。読み込んでも、このiPadのスタンプと連続記録は変わりません。</p>
+    <p class="muted">暗号化パックを起動時に自動取得します。初回だけ家庭用パスワードが必要です。スタンプと連続記録は変わりません。</p>
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="small-btn" onclick="syncRemotePhrasePack({force:true,notify:true})">🔄 最新パックを取得</button>
       <button class="small-btn" onclick="exportPhrasePack()">📤 パックを書き出す</button>
       <label class="file-label" for="packFile">📥 パックを読み込む</label>
       <input class="file-input" id="packFile" type="file" accept="application/json,.json" onchange="importPhrasePack(event)">
       <button class="small-btn danger" onclick="resetProgress()">スタンプをリセット</button>
     </div>
+    <p class="muted" id="remotePackStatus" style="margin-top:12px;"></p>
   </div>
 
   <button class="btn-main" onclick="showScreen('home'); renderHome();">✅ ホームにもどる</button>
@@ -337,6 +357,11 @@
 <script>
 /* ================= data ================= */
 const LS_KEY = 'twiceEigo.v1';
+const REMOTE_PACK_URL = 'family-pack.encrypted.json';
+const REMOTE_PACK_PASSWORD_KEY = 'twiceEigo.familyPackPassword';
+const REMOTE_PACK_VERSION_KEY = 'twiceEigo.familyPackVersion';
+let pendingRemotePack=null;
+let pendingRemoteNotify=false;
 const PHRASES_PER_QUIZ = 3; // 3フレーズ×2問=1回6問
 
 const DEFAULT_CATALOG = [
@@ -845,6 +870,85 @@ function mergePhrasePack(pack){
     });
   });
 }
+function bytesFromBase64(value){
+  const raw=atob(value), out=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
+  return out;
+}
+async function decryptRemotePack(wrapper,password){
+  if(!wrapper||wrapper.type!=='twice-eigo-encrypted-pack'||!wrapper.kdf||!wrapper.cipher) throw new Error('invalid encrypted pack');
+  const rawKey=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({
+    name:'PBKDF2', hash:'SHA-256',
+    salt:bytesFromBase64(wrapper.kdf.salt), iterations:wrapper.kdf.iterations
+  },rawKey,{name:'AES-GCM',length:256},false,['decrypt']);
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:bytesFromBase64(wrapper.cipher.iv)},key,bytesFromBase64(wrapper.cipher.data));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+function setRemotePackStatus(message){
+  const el=document.getElementById('remotePackStatus'); if(el) el.textContent=message;
+}
+function storageGet(key){ try{return localStorage.getItem(key)||'';}catch(e){return '';} }
+function storageSet(key,value){ try{localStorage.setItem(key,value);}catch(e){} }
+function storageRemove(key){ try{localStorage.removeItem(key);}catch(e){} }
+function showPackPasswordModal(wrapper,notify){
+  pendingRemotePack=wrapper; pendingRemoteNotify=notify;
+  document.getElementById('packPasswordError').textContent='';
+  document.getElementById('packPasswordInput').value='';
+  document.getElementById('packPasswordModal').classList.add('active');
+  setTimeout(()=>document.getElementById('packPasswordInput').focus(),0);
+}
+async function installRemotePack(wrapper,password,notify){
+  try{
+    const pack=await decryptRemotePack(wrapper,password);
+    mergePhrasePack(pack); save();
+    storageSet(REMOTE_PACK_PASSWORD_KEY,password);
+    storageSet(REMOTE_PACK_VERSION_KEY,String(wrapper.version));
+    renderHome(); renderLibrary();
+    if(document.getElementById('edit').classList.contains('active')) renderEdit();
+    setRemotePackStatus(`家庭用パック v${wrapper.version}・最新版`);
+    if(notify) alert('最新の家庭用フレーズパックを取得しました。スタンプはそのままです。');
+    return true;
+  }catch(e){
+    storageRemove(REMOTE_PACK_PASSWORD_KEY);
+    setRemotePackStatus('家庭用パスワードが違います');
+    return false;
+  }
+}
+async function submitRemotePackPassword(){
+  if(!pendingRemotePack) return;
+  const input=document.getElementById('packPasswordInput');
+  const password=input.value;
+  if(!password){ document.getElementById('packPasswordError').textContent='パスワードを入力してください'; return; }
+  const ok=await installRemotePack(pendingRemotePack,password,pendingRemoteNotify);
+  if(ok){
+    document.getElementById('packPasswordModal').classList.remove('active');
+    pendingRemotePack=null; pendingRemoteNotify=false;
+  }else{
+    input.value=''; input.focus();
+    document.getElementById('packPasswordError').textContent='パスワードが違います';
+  }
+}
+async function syncRemotePhrasePack(options={}){
+  const force=!!options.force, notify=!!options.notify;
+  try{
+    setRemotePackStatus('家庭用パックを確認中…');
+    const response=await fetch(`${REMOTE_PACK_URL}?t=${Date.now()}`,{cache:'no-store'});
+    if(!response.ok) throw new Error(`pack fetch ${response.status}`);
+    const wrapper=await response.json();
+    const installed=Number(storageGet(REMOTE_PACK_VERSION_KEY)||0);
+    if(!force&&installed===Number(wrapper.version)){
+      setRemotePackStatus(`家庭用パック v${installed}・最新版`); return;
+    }
+    const password=storageGet(REMOTE_PACK_PASSWORD_KEY);
+    if(!password){ showPackPasswordModal(wrapper,notify); setRemotePackStatus('家庭用パスワードを入力してください'); return; }
+    const ok=await installRemotePack(wrapper,password,notify);
+    if(!ok) showPackPasswordModal(wrapper,notify);
+  }catch(e){
+    setRemotePackStatus('オフラインのため更新確認を省略しました');
+    if(notify) alert('家庭用フレーズパックを取得できませんでした');
+  }
+}
 async function importPhrasePack(event){
   try{
     const file=event.target.files&&event.target.files[0]; if(!file) return;
@@ -861,6 +965,7 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<
 /* replay button default */
 document.getElementById('replayBtn').onclick=()=>{ if(quiz) playCurrentSegment(); };
 renderHome();
+syncRemotePhrasePack();
 </script>
 </body>
 </html>
