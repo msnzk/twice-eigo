@@ -388,8 +388,50 @@ const DEFAULT_CATALOG = [
   { id:'setmefree', title:'SET ME FREE', videoId:'w4cTYnOPdNk', phrases:[] },
   { id:'igotyou', title:'I GOT YOU', videoId:'haf67eKF0uo', phrases:[] },
   { id:'onespark', title:'ONE SPARK', videoId:'jCzez_q8si0', phrases:[] },
-  { id:'strategy', title:'Strategy', videoId:'bpiyH00cqS8', phrases:[] },
+  { id:'strategy', title:'Strategy (TWICE-TRATEGY ver.)', videoId:'bpiyH00cqS8', library:false, phrases:[] },
   { id:'onemoretime', title:'One More Time', videoId:'HuoOEry-Yc4', phrases:[] },
+
+  // JYP Entertainment — TWICE group M/V
+  { id:'merryhappy', title:'Merry & Happy', videoId:'zi_6oaQyckM', phrases:[] },
+  { id:'strategy-feat', title:'Strategy (feat. Megan Thee Stallion)', videoId:'Sz_wWzgh-vQ', phrases:[] },
+  { id:'thisisfor', title:'THIS IS FOR', videoId:'eHHQaoEW30Q', phrases:[] },
+  { id:'meplusyou', title:'ME+YOU', videoId:'zqorlX_5oHQ', phrases:[] },
+
+  // Solo and unit M/V
+  { id:'nayeon-pop', title:'NAYEON — POP!', videoId:'f6YDKF0LVWw', phrases:[] },
+  { id:'nayeon-abcd', title:'NAYEON — ABCD', videoId:'oUZttxRcPZw', phrases:[] },
+  { id:'jihyo-kmg', title:"JIHYO — Killin' Me Good", videoId:'jyw_vrI4ySg', phrases:[] },
+  { id:'tzuyu-runaway', title:'TZUYU — Run Away', videoId:'IIrCrGAX03Y', phrases:[] },
+  { id:'chaeyoung-shoot', title:'CHAEYOUNG — SHOOT (Firecracker)', videoId:'tl2luF-JRlU', phrases:[] },
+  { id:'misamo-donottouch', title:'MISAMO — Do not touch', videoId:'woKq2sD8xho', phrases:[] },
+  { id:'misamo-identity', title:'MISAMO — Identity', videoId:'-J_w9K6DgRo', phrases:[] },
+  { id:'misamo-confetti', title:'MISAMO — Confetti', videoId:'gOjG-70-D5o', phrases:[] },
+  { id:'misamo-newlook', title:'MISAMO — NEW LOOK', videoId:'FJWLj1-kGC0', phrases:[] },
+  { id:'misamo-marshmallow', title:'MISAMO — Marshmallow', videoId:'gAFgaI5D3Gc', phrases:[] },
+
+  // TWICE JAPAN OFFICIAL — full Music Video
+  { id:'tt-jp', title:'TT -Japanese ver.-', videoId:'t35H2BVq490', phrases:[] },
+  { id:'candypop', title:'Candy Pop', videoId:'wQ_POfToaVY', phrases:[] },
+  { id:'brandnewgirl', title:'BRAND NEW GIRL', videoId:'r1CMjQ0QJ1E', phrases:[] },
+  { id:'wakemeup', title:'Wake Me Up', videoId:'DdLYSziSXII', phrases:[] },
+  { id:'iwantyouback', title:'I WANT YOU BACK', videoId:'X3H-4crGD6k', phrases:[] },
+  { id:'bdz', title:'BDZ', videoId:'CMNahhgR_ss', phrases:[] },
+  { id:'likey-jp', title:'LIKEY -Japanese ver.-', videoId:'N7MKlhS2ysU', phrases:[] },
+  { id:'whatislove-jp', title:'What is Love? -Japanese ver.-', videoId:'3zQXMPbK5jU', phrases:[] },
+  { id:'happyhappy', title:'HAPPY HAPPY', videoId:'3n9rDwpa6QA', phrases:[] },
+  { id:'breakthrough', title:'Breakthrough', videoId:'ZdKYi5ekshM', phrases:[] },
+  { id:'fakeandtrue', title:'Fake & True', videoId:'zQELp93xxfo', phrases:[] },
+  { id:'fanfare', title:'Fanfare', videoId:'kRT174IdxuM', phrases:[] },
+  { id:'fancy-jp', title:'FANCY -Japanese ver.-', videoId:'6LbWN3FVfqI', phrases:[] },
+  { id:'better', title:'BETTER', videoId:'sLmLwgxnPUE', phrases:[] },
+  { id:'kurakura', title:'Kura Kura', videoId:'BSS8Y-0hOlY', phrases:[] },
+  { id:'perfectworld', title:'Perfect World', videoId:'fmOEKOjyDxU', phrases:[] },
+  { id:'doughnut', title:'Doughnut', videoId:'VcOSUOpACq0', phrases:[] },
+  { id:'scientist-jp', title:'SCIENTIST -Japanese ver.-', videoId:'7MHlhHaLcTA', phrases:[] },
+  { id:'celebrate', title:'Celebrate', videoId:'fMIn43MiwG8', phrases:[] },
+  { id:'harehare', title:'Hare Hare', videoId:'-uqWaGzQyxA', phrases:[] },
+  { id:'dive-jp', title:'DIVE', videoId:'QGCkDOkpWf8', phrases:[] },
+  { id:'enemy', title:'ENEMY', videoId:'xWldBK4d2Ps', phrases:[] },
 ];
 
 let state = load();
@@ -409,6 +451,7 @@ function load(){
           }else{
             ex.title=d.title;
             ex.videoId=d.videoId;
+            if(Object.prototype.hasOwnProperty.call(d,'library')) ex.library=d.library;
             ex.phrases=ex.phrases||[];
             // 既存の初期曲には、新しく増えた初期フレーズだけを追補する
             d.phrases.forEach(p=>{
@@ -518,8 +561,9 @@ function renderHome(){
 
 function renderLibrary(){
   const grid=document.getElementById('mvGrid'); grid.innerHTML='';
-  document.getElementById('mvCount').textContent=`${state.songs.length} MUSIC VIDEOS`;
-  state.songs.forEach(s=>{
+  const librarySongs=state.songs.filter(s=>s.library!==false);
+  document.getElementById('mvCount').textContent=`${librarySongs.length} MUSIC VIDEOS`;
+  librarySongs.forEach(s=>{
     const item=document.createElement('div'); item.className='mv-item';
     const ready=s.phrases&&s.phrases.length>0;
     const b=document.createElement('button'); b.className='mv-thumb';
